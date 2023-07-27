@@ -1,47 +1,47 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import 'ds-test/test.sol';
-import './strings.sol';
+import {Test} from "forge-std/Test.sol";
+import {Strings} from "src/Strings.sol";
 
-contract StringsTest is DSTest {
-	using strings for *;
+contract StringsTest is Test {
+    using Strings for *;
 
-
-    function abs(int x) private pure returns (int) {
-        if(x < 0)
+    function abs(int256 x) private pure returns (int256) {
+        if (x < 0) {
             return -x;
+        }
         return x;
     }
 
-    function sign(int x) private pure returns (int) {
-        return x == 0 ? int(0) : (x < 0 ? -1 : int(1));
+    function sign(int256 x) private pure returns (int256) {
+        return x == 0 ? int256(0) : (x < 0 ? -1 : int256(1));
     }
 
     function assertEq0(string memory a, string memory b) internal {
         assertEq0(bytes(a), bytes(b));
     }
 
-    function assertEq0(strings.slice memory a, strings.slice memory b) internal {
-    	assertEq0(a.toString(), b.toString());
+    function assertEq0(Strings.Slice memory a, Strings.Slice memory b) internal {
+        assertEq0(a.toString(), b.toString());
     }
 
-    function assertEq0(strings.slice memory a, string memory b) internal {
+    function assertEq0(Strings.Slice memory a, string memory b) internal {
         assertEq0(a.toString(), b);
     }
 
-	function testSliceToString() public {
-		string memory test = "Hello, world!";
-		assertEq0(test, test.toSlice().toString());
-	}
+    function testSliceToString() public {
+        string memory test = "Hello, world!";
+        assertEq0(test, test.toSlice().toString());
+    }
 
     function testBytes32Len() public {
         bytes32 test;
-        for(uint i = 0; i <= 32; i++) {
+        for (uint256 i = 0; i <= 32; i++) {
             assertEq(i, test.len());
-            test = bytes32((uint(test) / 0x100) | 0x2000000000000000000000000000000000000000000000000000000000000000);
+            test = bytes32((uint256(test) / 0x100) | 0x2000000000000000000000000000000000000000000000000000000000000000);
         }
     }
-
 
     function testToSliceB32() public {
         assertEq0(bytes32("foobar").toSliceB32(), "foobar".toSlice());
@@ -49,8 +49,8 @@ contract StringsTest is DSTest {
 
     function testCopy() public {
         string memory test = "Hello, world!";
-        strings.slice memory s1 = test.toSlice();
-        strings.slice memory s2 = s1.copy();
+        Strings.Slice memory s1 = test.toSlice();
+        Strings.Slice memory s2 = s1.copy();
         s1._len = 0;
         assertEq(s2._len, bytes(test).length);
     }
@@ -74,7 +74,7 @@ contract StringsTest is DSTest {
     }
 
     function testNextRune() public {
-        strings.slice memory s = unicode"a¡ࠀ𐀡".toSlice();
+        Strings.Slice memory s = unicode"a¡ࠀ𐀡".toSlice();
         assertEq0(s.nextRune(), "a");
         assertEq0(s, unicode"¡ࠀ𐀡");
         assertEq0(s.nextRune(), unicode"¡");
@@ -94,20 +94,25 @@ contract StringsTest is DSTest {
     }
 
     function testCompare() public {
-
         assertEq(sign("foobie".toSlice().compare("foobie".toSlice())), 0);
         assertEq(sign("foobie".toSlice().compare("foobif".toSlice())), -1);
         assertEq(sign("foobie".toSlice().compare("foobid".toSlice())), 1);
         assertEq(sign("foobie".toSlice().compare("foobies".toSlice())), -1);
         assertEq(sign("foobie".toSlice().compare("foobi".toSlice())), 1);
         assertEq(sign("foobie".toSlice().compare("doobie".toSlice())), 1);
-        assertEq(sign("01234567890123456789012345678901".toSlice().compare("012345678901234567890123456789012".toSlice())), -1);
-				assertEq(sign("0123456789012345678901234567890123".toSlice().compare("1123456789012345678901234567890123".toSlice())), -1);
+        assertEq(
+            sign("01234567890123456789012345678901".toSlice().compare("012345678901234567890123456789012".toSlice())),
+            -1
+        );
+        assertEq(
+            sign("0123456789012345678901234567890123".toSlice().compare("1123456789012345678901234567890123".toSlice())),
+            -1
+        );
         assertEq(sign("foo.bar".toSlice().split(".".toSlice()).compare("foo".toSlice())), 0);
     }
 
     function testStartsWith() public {
-        strings.slice memory s = "foobar".toSlice();
+        Strings.Slice memory s = "foobar".toSlice();
         assertTrue(s.startsWith("foo".toSlice()));
         assertTrue(!s.startsWith("oob".toSlice()));
         assertTrue(s.startsWith("".toSlice()));
@@ -115,7 +120,7 @@ contract StringsTest is DSTest {
     }
 
     function testBeyond() public {
-        strings.slice memory s = "foobar".toSlice();
+        Strings.Slice memory s = "foobar".toSlice();
         assertEq0(s.beyond("foo".toSlice()), "bar");
         assertEq0(s, "bar");
         assertEq0(s.beyond("foo".toSlice()), "bar");
@@ -124,7 +129,7 @@ contract StringsTest is DSTest {
     }
 
     function testEndsWith() public {
-        strings.slice memory s = "foobar".toSlice();
+        Strings.Slice memory s = "foobar".toSlice();
         assertTrue(s.endsWith("bar".toSlice()));
         assertTrue(!s.endsWith("oba".toSlice()));
         assertTrue(s.endsWith("".toSlice()));
@@ -132,7 +137,7 @@ contract StringsTest is DSTest {
     }
 
     function testUntil() public {
-        strings.slice memory s = "foobar".toSlice();
+        Strings.Slice memory s = "foobar".toSlice();
         assertEq0(s.until("bar".toSlice()), "foo");
         assertEq0(s, "foo");
         assertEq0(s.until("bar".toSlice()), "foo");
@@ -158,8 +163,8 @@ contract StringsTest is DSTest {
     }
 
     function testSplit() public {
-        strings.slice memory s = "foo->bar->baz".toSlice();
-        strings.slice memory delim = "->".toSlice();
+        Strings.Slice memory s = "foo->bar->baz".toSlice();
+        Strings.Slice memory delim = "->".toSlice();
         assertEq0(s.split(delim), "foo");
         assertEq0(s, "bar->baz");
         assertEq0(s.split(delim), "bar");
@@ -170,8 +175,8 @@ contract StringsTest is DSTest {
     }
 
     function testRsplit() public {
-        strings.slice memory s = "foo->bar->baz".toSlice();
-        strings.slice memory delim = "->".toSlice();
+        Strings.Slice memory s = "foo->bar->baz".toSlice();
+        Strings.Slice memory delim = "->".toSlice();
         assertEq0(s.rsplit(delim), "baz");
         assertEq0(s.rsplit(delim), "bar");
         assertEq0(s.rsplit(delim), "foo");
@@ -200,7 +205,7 @@ contract StringsTest is DSTest {
     }
 
     function testJoin() public {
-        strings.slice[] memory parts = new strings.slice[](4);
+        Strings.Slice[] memory parts = new Strings.Slice[](4);
         parts[0] = "zero".toSlice();
         parts[1] = "one".toSlice();
         parts[2] = "".toSlice();
@@ -209,7 +214,7 @@ contract StringsTest is DSTest {
         assertEq0(" ".toSlice().join(parts), "zero one  two");
         assertEq0("".toSlice().join(parts), "zeroonetwo");
 
-        parts = new strings.slice[](1);
+        parts = new Strings.Slice[](1);
         parts[0] = "zero".toSlice();
         assertEq0(" ".toSlice().join(parts), "zero");
     }

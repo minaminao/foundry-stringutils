@@ -1,6 +1,10 @@
+# Foundry - String & Slice Utility Library for Solidity
 
-# String & slice utility library for Solidity
+This library is a fork of [solidity-stringutils](https://github.com/Arachnid/solidity-stringutils) and was created for my own use.
+This repository follows the Foundry format and the style guide of Solidity, and [the long-abandoned warnings](https://github.com/Arachnid/solidity-stringutils/pull/56) displayed at compile time have been fixed.
+
 ## Overview
+
 Functionality in this library is largely implemented using an abstraction called a 'slice'. A slice represents a part of a string - anything from the entire string to a single character, or even no characters at all (a 0-length slice). Since a slice only has to specify an offset and a length, copying and manipulating slices is a lot less expensive than copying and manipulating the strings they reference.
 
 To further reduce gas costs, most functions on slice that need to return a slice modify the original one instead of allocating a new one; for instance, `s.split(".")` will return the text up to the first '.', modifying s to only contain the remainder of the string after the '.'. In situations where you do not want to modify the original slice, you can make a copy first with `.copy()`, for example: `s.copy().split(".")`. Try and avoid using this idiom in loops; since Solidity has no memory management, it will result in allocating many short-lived slices that are later discarded.
@@ -9,15 +13,24 @@ Functions that return two slices come in two versions: a non-allocating version 
 
 Functions that have to copy string data will return strings rather than slices; these can be cast back to slices for further processing if required.
 
+## Install
+
+```
+forge install minaminao/foundry-stringutils
+```
+
 ## Examples
 ### Basic usage
-    import "github.com/Arachnid/solidity-stringutils/strings.sol";
 
-    contract Contract {
-        using strings for *;
+```solidity
+import {Strings} from "foundry-stringutils/Strings.sol";
 
-        // ...
-    }
+contract Contract {
+    using Strings for *;
+
+    // ...
+}
+```
 
 ### Getting the character length of a string
     var len = "Unicode snowman ☃".toSlice().len(); // 17
@@ -38,7 +51,7 @@ After the above code executes, `s` is now "bar baz", and `foo` is now "foo".
 
 ### Extracting the middle part of a string
     var s = "www.google.com".toSlice();
-    strings.slice memory part;
+    Strings.Slice memory part;
     s.split(".".toSlice(), part); // part and return value is "www"
     s.split(".".toSlice(), part); // part and return value is "google"
 
